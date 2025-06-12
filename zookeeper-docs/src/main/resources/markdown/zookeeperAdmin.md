@@ -43,6 +43,7 @@ limitations under the License.
         * [Advanced Configuration](#sc_advancedConfiguration)
         * [Cluster Options](#sc_clusterOptions)
         * [Encryption, Authentication, Authorization Options](#sc_authOptions)
+            * [TLS Cipher Suites](#sc_tls_cipher_suites)
         * [Experimental Options/Features](#Experimental+Options%2FFeatures)
         * [Unsafe Options](#Unsafe+Options)
         * [Disabling data directory autocreation](#Disabling+data+directory+autocreation)
@@ -1425,7 +1426,9 @@ of servers -- that is, when deploying clusters of servers.
     command must be put in this list else ZooKeeper server will
     not enable the command.
     By default the whitelist only contains "srvr" command
-    which zkServer.sh uses. The rest of four-letter word commands are disabled
+    which zkServer.sh uses. Additionally, if Read Only Mode is enabled by setting
+    Java system property **readonlymode.enabled**, then the "isro" command is
+    added to the whitelist. The rest of four-letter word commands are disabled
     by default: attempting to use them will gain a response
     ".... is not executed because it is not in the whitelist."
     Here's an example of the configuration that enables stat, ruok, conf, and isro
@@ -1736,7 +1739,7 @@ and [SASL authentication for ZooKeeper](https://cwiki.apache.org/confluence/disp
     (Java system properties: **zookeeper.ssl.ciphersuites** and **zookeeper.ssl.quorum.ciphersuites**)
     **New in 3.5.5:**
     Specifies the enabled cipher suites to be used in client and quorum TLS negotiation.
-    Default: Enabled cipher suites depend on the Java runtime version being used.
+    Default: JDK defaults since 3.10.0, and hard coded cipher suites for 3.9 and earlier versions. See [TLS Cipher Suites](#sc_tls_cipher_suites).
 
 * *ssl.context.supplier.class* and *ssl.quorum.context.supplier.class* :
     (Java system properties: **zookeeper.ssl.context.supplier.class** and **zookeeper.ssl.quorum.context.supplier.class**)
@@ -1874,6 +1877,19 @@ and [SASL authentication for ZooKeeper](https://cwiki.apache.org/confluence/disp
       can be used.
     
     Default: **true** (3.9.0+), **false** (3.8.x)
+
+<a name="sc_tls_cipher_suites"></a>
+
+##### TLS Cipher Suites
+
+From 3.5.5 to 3.9 a hard coded default cipher list was used, with the ordering
+dependent on whether it is run Java 8 or a later version.
+
+The list on Java 8 includes TLSv1.2 CBC, GCM and TLSv1.3 ciphers in ordering: *TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256, TLS_CHACHA20_POLY1305_SHA256*
+
+The list on Java 9+ includes TLSv1.2 GCM, CBC and TLSv1.3 ciphers in ordering: *TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256, TLS_CHACHA20_POLY1305_SHA256*
+
+Since 3.10 there is no hardcoded list, and the JDK defaults are used.
 
 <a name="Experimental+Options%2FFeatures"></a>
 
